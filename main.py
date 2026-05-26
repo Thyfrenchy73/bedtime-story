@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 
 DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY")
-ELEVENLABS_KEY = os.environ.get("ELEVENLABS_API_KEY")
 
 def generate_story(day):
     headers = {
@@ -20,12 +19,17 @@ def generate_story(day):
         "max_tokens": 500
     }
     response = requests.post("https://api.deepseek.com/chat/completions", headers=headers, json=data)
-    return response.json()["choices"][0]["message"]["content"]
+    story = response.json()["choices"][0]["message"]["content"]
+    
+    # Write to file instead of print (to stay under 64KB limit)
+    with open("story.txt", "w") as f:
+        f.write(f"Chapter {day}\n{story}\n")
+    
+    return story
 
 def main():
     day = datetime.now().day % 5 + 1
-    story = generate_story(day)
-    print(f"Day {day}: {story}")
+    generate_story(day)
 
 if __name__ == "__main__":
     main()
